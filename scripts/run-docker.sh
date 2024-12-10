@@ -24,7 +24,7 @@ else
 fi
 
 : ${TERMUX_BUILDER_IMAGE_NAME:=ghcr.io/termux/package-builder}
-: ${CONTAINER_NAME:=termux-package-builder}
+: ${CONTAINER_NAME:=biswa96-termux-package-builder}
 
 USER=builder
 
