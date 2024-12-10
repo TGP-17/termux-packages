@@ -3,6 +3,7 @@ TERMUX_PKG_DESCRIPTION="A cli to browse and watch anime"
 TERMUX_PKG_LICENSE="GPL-3.0"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION="4.9"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://github.com/pystardust/ani-cli/archive/v${TERMUX_PKG_VERSION}.tar.gz
 TERMUX_PKG_SHA256=bdd5e3c264ab67760b13d34174ec86c3da3aaaaacda3ba529d8b2648bce2ef08
 TERMUX_PKG_DEPENDS="aria2, ffmpeg, fzf, grep, sed, wget"
