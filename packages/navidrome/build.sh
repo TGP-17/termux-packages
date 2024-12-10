@@ -3,6 +3,7 @@ TERMUX_PKG_DESCRIPTION="🎧☁️ Modern Music Server and Streamer compatible w
 TERMUX_PKG_LICENSE="GPL-3.0"
 TERMUX_PKG_MAINTAINER="2096779623 <admin@utermux.dev>"
 TERMUX_PKG_VERSION="0.53.3"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://github.com/navidrome/navidrome/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz
 TERMUX_PKG_SHA256=e0d5b0280c302938177b2241a5f9868a4b40cd603ddf5acb2ff0f9c40e44c13a
 TERMUX_PKG_DEPENDS="taglib, ffmpeg"
