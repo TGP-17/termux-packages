@@ -21,7 +21,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" --disable-fdk-aac"
 
 termux_step_pre_configure() {
 	# handbrake configure attempts to detect meson and cmake,
-	# then during the build it runs more nested configures using 
+	# then during the build it runs more nested configures using
 	# meson and cmake build files, then if the GUI is enabled
 	# it attempts to detect and run glib-compile-resources
 	termux_setup_meson
