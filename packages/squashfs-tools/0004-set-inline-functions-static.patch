@@ -1,0 +1,78 @@
+If these functions are not set as static,
+they result in these errors at link-time
+ld.lld: error: undefined symbol: waitforthread
+This problem is reproducible in a milder form when
+building squashfs-tools 4.2 on modern GNU/Linux when using Clang version 19.1.4,
+but is not reproducible when building it using GCC 14.2.1.
+
+--- a/squashfs-tools/mksquashfs.c
++++ b/squashfs-tools/mksquashfs.c
+@@ -707,7 +707,7 @@ void cache_block_put(struct file_buffer *entry)
+ 			+ (((char *)A) - data_cache)))
+ 
+ 
+-inline void waitforthread(int i)
++static inline void waitforthread(int i)
+ {
+ 	TRACE("Waiting for thread %d\n", i);
+ 	while(thread[i] != 0)
+@@ -2323,7 +2323,7 @@ struct file_info *duplicate(long long file_size, long long bytes,
+ }
+ 
+ 
+-inline int is_fragment(struct inode_info *inode)
++static inline int is_fragment(struct inode_info *inode)
+ {
+ 	int file_size = inode->buf.st_size;
+ 
+@@ -3389,20 +3389,20 @@ struct inode_info *lookup_inode2(struct stat *buf, int pseudo, int id)
+ }
+ 
+ 
+-inline struct inode_info *lookup_inode(struct stat *buf)
++static inline struct inode_info *lookup_inode(struct stat *buf)
+ {
+ 	return lookup_inode2(buf, 0, 0);
+ }
+ 
+ 
+-inline void alloc_inode_no(struct inode_info *inode, unsigned int use_this)
++static inline void alloc_inode_no(struct inode_info *inode, unsigned int use_this)
+ {
+ 	if (inode->inode_number == 0)
+ 		inode->inode_number = use_this ? : inode_no ++;
+ }
+ 
+ 
+-inline struct dir_ent *create_dir_entry(char *name, char *source_name,
++static inline struct dir_ent *create_dir_entry(char *name, char *source_name,
+ 	char *nonstandard_pathname, struct dir_info *dir)
+ {
+ 	struct dir_ent *dir_ent = malloc(sizeof(struct dir_ent));
+@@ -3419,7 +3419,7 @@ inline struct dir_ent *create_dir_entry(char *name, char *source_name,
+ }
+ 
+ 
+-inline void add_dir_entry(struct dir_ent *dir_ent, struct dir_info *sub_dir,
++static inline void add_dir_entry(struct dir_ent *dir_ent, struct dir_info *sub_dir,
+ 	struct inode_info *inode_info)
+ {
+ 	struct dir_info *dir = dir_ent->our_dir;
+@@ -3435,7 +3435,7 @@ inline void add_dir_entry(struct dir_ent *dir_ent, struct dir_info *sub_dir,
+ }
+ 
+ 
+-inline void add_dir_entry2(char *name, char *source_name,
++static inline void add_dir_entry2(char *name, char *source_name,
+ 	char *nonstandard_pathname, struct dir_info *sub_dir,
+ 	struct inode_info *inode_info, struct dir_info *dir)
+ {
+@@ -3447,7 +3447,7 @@ inline void add_dir_entry2(char *name, char *source_name,
+ }
+ 
+ 
+-inline void free_dir_entry(struct dir_ent *dir_ent)
++static inline void free_dir_entry(struct dir_ent *dir_ent)
+ {
+ 	if(dir_ent->name)
+ 		free(dir_ent->name);

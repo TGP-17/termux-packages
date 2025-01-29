@@ -1,0 +1,80 @@
+For an unknown reason, endianness detection is not working correctly.
+For the record, Android cannot be Big Endian: https://developer.android.com/ndk/guides/abis
+
+--- a/squashfs-tools/mksquashfs.h
++++ b/squashfs-tools/mksquashfs.h
+@@ -25,7 +25,7 @@
+  *
+  */
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
++#if 0
+ #define SQUASHFS_SWAP_SHORTS(s, d, n) swap_le16_num(s, d, n)
+ #define SQUASHFS_SWAP_INTS(s, d, n) swap_le32_num(s, d, n)
+ #define SQUASHFS_SWAP_LONG_LONGS(s, d, n) swap_le64_num(s, d, n)
+--- a/squashfs-tools/read_fs.h
++++ b/squashfs-tools/read_fs.h
+@@ -24,7 +24,7 @@
+  *
+  */
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
++#if 0
+ #define SQUASHFS_SWAP_SHORTS(d, s, n) swap_le16_num(s, d, n)
+ #define SQUASHFS_SWAP_INTS(d, s, n) swap_le32_num(s, d, n)
+ #define SQUASHFS_SWAP_LONG_LONGS(d, s, n) swap_le64_num(s, d, n)
+--- a/squashfs-tools/squashfs_compat.h
++++ b/squashfs-tools/squashfs_compat.h
+@@ -765,7 +765,7 @@ typedef struct squashfs_fragment_entry_2 squashfs_fragment_entry_2;
+  * macros used to swap each structure entry, taking into account
+  * bitfields and different bitfield placing conventions on differing architectures
+  */
+-#if __BYTE_ORDER == __BIG_ENDIAN
++#if 0
+ 	/* convert from big endian to little endian */
+ #define SQUASHFS_SWAP(value, p, pos, tbits) _SQUASHFS_SWAP(value, p, pos, tbits, b_pos)
+ #else
+--- a/squashfs-tools/squashfs_swap.h
++++ b/squashfs-tools/squashfs_swap.h
+@@ -27,7 +27,7 @@
+  * macros to convert each stucture from big endian to little endian
+  */
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
++#if 0
+ #include <stddef.h>
+ extern void swap_le16(void *, void *);
+ extern void swap_le32(void *, void *);
+--- a/squashfs-tools/swap.c
++++ b/squashfs-tools/swap.c
+@@ -27,7 +27,7 @@
+ #include <endian.h>
+ #endif
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
++#if 0
+ void swap_le16(void *src, void *dest)
+ {
+ 	unsigned char *s = src;
+--- a/squashfs-tools/unsquashfs.c
++++ b/squashfs-tools/unsquashfs.c
+@@ -1590,7 +1590,7 @@ void squashfs_stat(char *source)
+ 	time_t mkfs_time = (time_t) sBlk.s.mkfs_time;
+ 	char *mkfs_str = ctime(&mkfs_time);
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
++#if 0
+ 	printf("Found a valid %sSQUASHFS %d:%d superblock on %s.\n",
+ 		sBlk.s.s_major == 4 ? "" : swap ? "little endian " :
+ 		"big endian ", sBlk.s.s_major, sBlk.s.s_minor, source);
+--- a/squashfs-tools/xz_wrapper.h
++++ b/squashfs-tools/xz_wrapper.h
+@@ -32,7 +32,7 @@
+ #include <endian.h>
+ #endif
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
++#if 0
+ extern unsigned int inswap_le32(unsigned int);
+ 
+ #define SQUASHFS_INSWAP_COMP_OPTS(s) { \
