@@ -21,15 +21,16 @@ termux_step_make() {
 		# try removing when golang version is upgraded
 
 	# Building for host to generate manpages and completion.
+	(
 	chmod 700 -R $GOPATH/pkg && rm -rf $GOPATH/pkg
-	unset GOOS GOARCH CGO_LDFLAGS
-	unset CC CXX CFLAGS CXXFLAGS LDFLAGS
+	termux_disable_bionic
 	go build \
 		-o "$TERMUX_PKG_BUILDDIR/hugo" \
 		-tags "linux extended" \
 		main.go
 		# "linux" tag should not be necessary
 		# try removing when golang version is upgraded
+	)
 }
 
 termux_step_make_install() {

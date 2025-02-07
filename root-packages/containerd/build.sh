@@ -31,8 +31,10 @@ termux_step_make() {
 	# issue the build command
 	export BUILDTAGS=no_btrfs
 	SHIM_CGO_ENABLED=1 make -j ${TERMUX_PKG_MAKE_PROCESSES}
-	(unset GOOS GOARCH CGO_LDFLAGS CC CXX CFLAGS CXXFLAGS LDFLAGS
-	make -j ${TERMUX_PKG_MAKE_PROCESSES} man)
+	(
+		termux_disable_bionic
+		make -j ${TERMUX_PKG_MAKE_PROCESSES} man
+	)
 
 }
 

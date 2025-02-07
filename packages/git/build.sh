@@ -3,6 +3,7 @@ TERMUX_PKG_DESCRIPTION="Fast, scalable, distributed revision control system"
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION="2.47.0"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://mirrors.kernel.org/pub/software/scm/git/git-${TERMUX_PKG_VERSION}.tar.xz
 TERMUX_PKG_SHA256=1ce114da88704271b43e027c51e04d9399f8c88e9ef7542dae7aebae7d87bc4e
 TERMUX_PKG_AUTO_UPDATE=true
@@ -51,10 +52,6 @@ termux_step_pre_configure() {
 		termux_error_exit "Package '$TERMUX_PKG_NAME' is not safe for on-device builds."
 	fi
 
-	# Setup perl so that the build process can execute it:
-	rm -f $TERMUX_PREFIX/bin/perl
-	ln -s $(command -v perl) $TERMUX_PREFIX/bin/perl
-
 	# Force fresh perl files (otherwise files from earlier builds
 	# remains without bumped modification times, so are not picked
 	# up by the package):
@@ -76,9 +73,6 @@ termux_step_post_make_install() {
 	cp $TERMUX_PKG_SRCDIR/contrib/completion/git-completion.bash \
 		$TERMUX_PKG_SRCDIR/contrib/completion/git-prompt.sh \
 		$TERMUX_PREFIX/etc/bash_completion.d/
-
-	# Remove the build machine perl setup in termux_step_pre_configure to avoid it being packaged:
-	rm $TERMUX_PREFIX/bin/perl
 
 	# Remove clutter:
 	rm -Rf $TERMUX_PREFIX/lib/*-linux*/perl

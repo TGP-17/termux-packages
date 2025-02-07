@@ -21,7 +21,7 @@ termux_step_pre_configure() {
 
 	# zig 0.11.0+ uses 3 stages bootstrapping build system
 	# which NDK cant be used anymore
-	unset AS CC CFLAGS CPP CPPFLAGS CXX CXXFLAGS LD LDFLAGS
+	termux_disable_bionic
 }
 
 termux_step_make() {

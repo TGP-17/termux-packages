@@ -3,6 +3,7 @@ TERMUX_PKG_DESCRIPTION="MinGW-w64 tools for LLVM-MinGW"
 TERMUX_PKG_LICENSE="custom"
 TERMUX_PKG_MAINTAINER="@licy183"
 TERMUX_PKG_VERSION=12.0.0
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://downloads.sourceforge.net/mingw-w64/mingw-w64/mingw-w64-release/mingw-w64-v${TERMUX_PKG_VERSION}.tar.bz2
 TERMUX_PKG_SHA256=cc41898aac4b6e8dd5cffd7331b9d9515b912df4420a3a612b5ea2955bbeed2f
 TERMUX_PKG_AUTO_UPDATE=false
@@ -59,7 +60,7 @@ termux_step_make_install() {
 	# Symlinks tools to $PREFIX/bin
 	local _tool
 	for _tool in gendef {aarch64,armv7,i686,x86_64}-w64-mingw32{,uwp}-widl; do
-		ln -sr $_INSTALL_PREFIX/bin/$_tool $TERMUX_PREFIX/bin/$_tool
+		ln -sfr $_INSTALL_PREFIX/bin/$_tool $TERMUX_PREFIX/bin/$_tool
 	done
 }
 

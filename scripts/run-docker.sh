@@ -48,6 +48,7 @@ $SUDO docker start $CONTAINER_NAME >/dev/null 2>&1 || {
 	$SUDO docker run \
 		--detach \
 		--init \
+		--cap-add LINUX_IMMUTABLE \
 		--name $CONTAINER_NAME \
 		--volume $VOLUME \
 		$SEC_OPT \

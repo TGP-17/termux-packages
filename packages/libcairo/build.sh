@@ -9,11 +9,15 @@ TERMUX_PKG_DEPENDS="fontconfig, freetype, glib, libandroid-shmem, libandroid-exe
 TERMUX_PKG_BREAKS="libcairo-dev, libcairo-gobject"
 TERMUX_PKG_REPLACES="libcairo-dev, libcairo-gobject"
 
+# disable tests to avoid
+# ../src/test/ps2png.c:29:10: fatal error: 'cairo.h' file not found
+# in the event that libspectre was installed before compiling libcairo
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 -Dpng=enabled
 -Dzlib=enabled
 -Dglib=enabled
 -Dgtk_doc=false
+-Dtests=disabled
 "
 
 termux_step_pre_configure() {

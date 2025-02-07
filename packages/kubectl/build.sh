@@ -24,8 +24,7 @@ termux_step_make() {
 	# Needed to generate manpages.
 	#(
 	#	export GOPATH="$TERMUX_PKG_BUILDDIR/host"
-	#	unset GOOS GOARCH CGO_LDFLAGS
-	#	unset CC CXX CFLAGS CXXFLAGS LDFLAGS
+	#	termux_disable_bionic
 	#	cd "$TERMUX_PKG_SRCDIR"
 	#	./hack/update-generated-docs.sh
 	#)

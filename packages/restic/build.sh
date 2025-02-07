@@ -19,8 +19,7 @@ termux_step_make() {
 
 	(
 		# Separately building for host so we can generate manpages.
-		unset GOOS GOARCH CGO_LDFLAGS
-		unset CC CXX CFLAGS CXXFLAGS LDFLAGS
+		termux_disable_bionic
 		go build -ldflags "-X 'main.version=${TERMUX_PKG_VERSION}'" ./cmd/...
 		./restic generate --man doc/man
 		rm -f ./restic

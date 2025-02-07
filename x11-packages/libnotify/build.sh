@@ -19,9 +19,4 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 termux_step_pre_configure() {
 	termux_setup_gir
 	termux_setup_glib_cross_pkg_config_wrapper
-
-	if [ "$TERMUX_ON_DEVICE_BUILD" = "false" ]; then
-		# Pre-installed headers affect GIR generation:
-		rm -rf "$TERMUX_PREFIX/include/libnotify"
-	fi
 }

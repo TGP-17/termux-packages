@@ -4,6 +4,7 @@ TERMUX_PKG_LICENSE="Apache-2.0, BSD 2-Clause, MIT"
 TERMUX_PKG_LICENSE_FILE="LICENSE, src/wasi-libc/LICENSE-MIT, src/wasi-libc/libc-bottom-half/cloudlibc/LICENSE"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION="24"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=git+https://github.com/WebAssembly/wasi-sdk
 TERMUX_PKG_GIT_BRANCH=wasi-sdk-${TERMUX_PKG_VERSION}
 TERMUX_PKG_RECOMMENDS="wasm-component-ld"
@@ -61,11 +62,12 @@ termux_step_host_build() {
 	cat "${TERMUX_PREFIX}/share/doc/${TERMUX_PKG_NAME}/VERSION"
 	echo
 
-	mv -v "${TERMUX_PKG_HOSTBUILD_DIR}/install/share/cmake" "${TERMUX_PREFIX}/share"
+	mkdir -p "${TERMUX_PREFIX}"/share/cmake/
+	mv -vf "${TERMUX_PKG_HOSTBUILD_DIR}"/install/share/cmake/* "${TERMUX_PREFIX}"/share/cmake/
 
 	local llvm_major_version=$(grep llvm-version "${TERMUX_PREFIX}/share/wasi-sysroot/VERSION" | cut -d" " -f2 | cut -d"." -f1)
 	mkdir -p "${TERMUX_PREFIX}/lib/clang/${llvm_major_version}/lib"
-	mv -v "${TERMUX_PREFIX}/clang-resource-dir/lib" "${TERMUX_PREFIX}/lib/clang/${llvm_major_version}"
+	mv -vf "${TERMUX_PREFIX}"/clang-resource-dir/lib/* "${TERMUX_PREFIX}/lib/clang/${llvm_major_version}/lib/"
 	rm -frv "${TERMUX_PREFIX}/clang-resource-dir"
 }
 

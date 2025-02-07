@@ -31,14 +31,6 @@ termux_step_post_get_source() {
 termux_step_pre_configure() {
 	CPPFLAGS+=" -I${TERMUX_STANDALONE_TOOLCHAIN}/sysroot/usr/include/c++/v1"
 
-	# Workaround for build break caused by `sha2.h` from `libmd` package:
-	if [ -e "$TERMUX_PREFIX/include/sha2.h" ]; then
-		local inc="$TERMUX_PKG_BUILDDIR/_include"
-		mkdir -p "${inc}"
-		ln -sf "$TERMUX_PKG_SRCDIR/base/sha2.h" "${inc}/"
-		CPPFLAGS="-I${inc} ${CPPFLAGS}"
-	fi
-
 	if [[ "${TERMUX_ARCH}" == "aarch64" ]]; then
 		# https://github.com/llvm/llvm-project/issues/74361
 		# NDK r27: clang++: error: unsupported option '-mfpu=' for target 'aarch64-linux-android24'

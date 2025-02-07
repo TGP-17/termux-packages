@@ -24,7 +24,13 @@ termux_setup_gn() {
 			local LAST_PWD=$(pwd)
 			cd $GN_FOLDER
 			(
-				unset CC CXX CFLAGS CXXFLAGS LD LDFLAGS AR AS CPP OBJCOPY OBJDUMP RANLIB READELF STRIP
+				termux_disable_bionic
+				# compile with Ubuntu-provided GCC instead of Clang 
+				# just to keep the configuration more normal
+				# (previously this was compiled by 
+				# ~/.termux-build/_cache/android-r27b-api-24-v1/bin/clang-18
+				# completely bare in GNU host targeting mode)
+				export CC=gcc CXX=g++ AR=ar
 				./build/gen.py \
 					--no-last-commit-position
 				cat <<-EOF >./out/last_commit_position.h

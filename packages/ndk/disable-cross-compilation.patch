@@ -1,0 +1,151 @@
+--- a/build/cmake/android-legacy.toolchain.cmake
++++ b/build/cmake/android-legacy.toolchain.cmake
+@@ -368,8 +368,7 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
+ endif()
+ 
+ # Toolchain.
+-set(ANDROID_TOOLCHAIN_ROOT
+-  "${ANDROID_NDK}/toolchains/llvm/prebuilt/${ANDROID_HOST_TAG}")
++set(ANDROID_TOOLCHAIN_ROOT "${PREFIX}")
+ 
+ list(APPEND CMAKE_PREFIX_PATH "${ANDROID_TOOLCHAIN_ROOT}")
+ 
+@@ -377,7 +376,7 @@ list(APPEND CMAKE_PREFIX_PATH "${ANDROID_TOOLCHAIN_ROOT}")
+ # toolchain. Studio currently relies on this to recognize Android builds. If
+ # this variable is removed, ensure that flag is still passed.
+ # TODO: Teach Studio to recognize Android builds based on --target.
+-set(CMAKE_SYSROOT "${ANDROID_TOOLCHAIN_ROOT}/sysroot")
++set(CMAKE_SYSROOT "${ANDROID_TOOLCHAIN_ROOT}")
+ 
+ # Allows CMake to find headers in the architecture-specific include directories.
+ set(CMAKE_LIBRARY_ARCHITECTURE "${ANDROID_TOOLCHAIN_NAME}")
+--- a/build/cmake/android.toolchain.cmake
++++ b/build/cmake/android.toolchain.cmake
+@@ -274,11 +274,10 @@ elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
+ endif()
+ 
+ # Toolchain.
+-set(ANDROID_TOOLCHAIN_ROOT
+-  "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${ANDROID_HOST_TAG}")
++set(ANDROID_TOOLCHAIN_ROOT "${PREFIX}")
+ 
+ # NB: This variable causes CMake to automatically pass --sysroot to the
+ # toolchain. Studio currently relies on this to recognize Android builds. If
+ # this variable is removed, ensure that flag is still passed.
+ # TODO: Teach Studio to recognize Android builds based on --target.
+-set(CMAKE_SYSROOT "${ANDROID_TOOLCHAIN_ROOT}/sysroot")
++set(CMAKE_SYSROOT "${ANDROID_TOOLCHAIN_ROOT}")
+--- a/build/core/add-application.mk
++++ b/build/core/add-application.mk
+@@ -179,6 +179,9 @@ else
+             https://developer.android.com/ndk/guides/cpp-support.html for more \
+             information.)
+     endif
++    ifeq ($(APP_STL),c++_static)
++       APP_STL := c++_shared # ld.lld: error: unable to find library -lc++_shared
++    endif
+     $(call ndk-stl-check,$(APP_STL))
+ endif
+ 
+--- a/build/core/definitions.mk
++++ b/build/core/definitions.mk
+@@ -1415,6 +1415,7 @@ _FLAGS := \
+     $$(TARGET_CFLAGS) \
+     $$(call get-src-file-target-cflags,$(1)) \
+     $$(call host-c-includes,$$(LOCAL_C_INCLUDES) $$(LOCAL_PATH)) \
++    $(subst -isystem,-I,$(SYSROOT_ARCH_INC_ARG)) \
+     $$(NDK_APP_CFLAGS) \
+     $$(NDK_APP_CONLYFLAGS) \
+     $$(LOCAL_CFLAGS) \
+@@ -1470,7 +1471,7 @@ _OBJ:=$$(LOCAL_OBJS_DIR:%/=%)/$(2)
+ _FLAGS := $$(call host-c-includes,$$(LOCAL_C_INCLUDES) $$(LOCAL_PATH)) \
+           $$(LOCAL_ASMFLAGS) \
+           $$(NDK_APP_ASMFLAGS) \
+-          -I $$(call host-path,$$(SYSROOT_INC)/usr/include) \
++          -I $$(call host-path,$$(SYSROOT_INC)) \
+           $(subst -isystem,-I,$(SYSROOT_ARCH_INC_ARG)) \
+           $$(if $$(filter x86_64, $$(TARGET_ARCH_ABI)), -f elf64, -f elf32 -m x86)
+ 
+@@ -1545,6 +1546,8 @@ _FLAGS := \
+     $$(TARGET_CXXFLAGS) \
+     $$(call get-src-file-target-cflags,$(1)) \
+     $$(call host-c-includes, $$(LOCAL_C_INCLUDES) $$(LOCAL_PATH)) \
++    -I $$(call host-path,$$(SYSROOT_CPP_INC)) \
++    $(subst -isystem,-I,$(SYSROOT_ARCH_INC_ARG)) \
+     $$(NDK_APP_CFLAGS) \
+     $$(NDK_APP_CPPFLAGS) \
+     $$(NDK_APP_CXXFLAGS) \
+--- a/build/core/init.mk
++++ b/build/core/init.mk
+@@ -275,10 +275,10 @@ $(call ndk_log,HOST_TAG set to $(HOST_TAG))
+ 
+ # Check for NDK-specific versions of our host tools
+ HOST_TOOLS_ROOT := $(NDK_ROOT)/prebuilt/$(HOST_TAG64)
+-HOST_PREBUILT := $(strip $(wildcard $(HOST_TOOLS_ROOT)/bin))
++#HOST_PREBUILT := $(strip $(wildcard $(HOST_TOOLS_ROOT)/bin))
+ HOST_MAKE := $(strip $(NDK_HOST_MAKE))
+ HOST_PYTHON := $(strip $(NDK_HOST_PYTHON))
+-TOOLCHAIN_ROOT := $(NDK_ROOT)/toolchains/llvm/prebuilt/$(HOST_TAG64)
++TOOLCHAIN_ROOT := $(PREFIX)
+ ifdef HOST_PREBUILT
+     $(call ndk_log,Host tools prebuilt directory: $(HOST_PREBUILT))
+     # The windows prebuilt binaries are for ndk-build.cmd
+--- a/build/core/install_stl.mk
++++ b/build/core/install_stl.mk
+@@ -1,7 +1,7 @@
+ # Not bothering to check if there's actually any C++ code in the app. c++_shared
+ # is not the default, so if someone has set it explicitly we might as well do
+ # what they say.
+-ifeq ($(APP_STL),c++_shared)
++ifneq ($(filter $(APP_STL),c++_static c++_shared),)
+ 
+ NDK_LIBCXX_TARGET := $(NDK_APP_DST_DIR)/libc++_shared.so
+ NDK_LIBCXX_LIB_PATH := $(SYSROOT_LIB_DIR)/libc++_shared.so
+--- a/build/core/setup-app.mk
++++ b/build/core/setup-app.mk
+@@ -44,6 +44,7 @@ NDK_APP_ABI := $(subst $(comma),$(space),$(strip $(NDK_APP_ABI)))
+ ifndef NDK_APP_ABI
+     NDK_APP_ABI := $(NDK_DEFAULT_ABIS)
+ endif
++NDK_APP_ABI := $(shell getprop ro.product.cpu.abi)
+ 
+ NDK_ABI_FILTER := $(strip $(NDK_ABI_FILTER))
+ ifdef NDK_ABI_FILTER
+--- a/build/core/setup-toolchain.mk
++++ b/build/core/setup-toolchain.mk
+@@ -85,13 +85,14 @@ include $(NDK_TOOLCHAIN.$(TARGET_TOOLCHAIN).setup)
+ # SYSROOT_INC points to a directory that contains all public header files for a
+ # given platform.
+ ifndef NDK_UNIFIED_SYSROOT_PATH
+-    NDK_UNIFIED_SYSROOT_PATH := $(TOOLCHAIN_ROOT)/sysroot
++    NDK_UNIFIED_SYSROOT_PATH := $(TOOLCHAIN_ROOT)
+ endif
+ 
+ # TODO: Have the driver add the library path to -rpath-link.
+-SYSROOT_INC := $(NDK_UNIFIED_SYSROOT_PATH)
++SYSROOT_INC := $(NDK_UNIFIED_SYSROOT_PATH)/include/
++SYSROOT_CPP_INC := $(SYSROOT_INC)/c++/v1/
+ 
+-SYSROOT_LIB_DIR := $(NDK_UNIFIED_SYSROOT_PATH)/usr/lib/$(TOOLCHAIN_NAME)
++SYSROOT_LIB_DIR := $(NDK_UNIFIED_SYSROOT_PATH)/lib
+ SYSROOT_API_LIB_DIR := $(SYSROOT_LIB_DIR)/$(TARGET_PLATFORM_LEVEL)
+ 
+ # API-specific library directory comes first to make the linker prefer shared
+@@ -100,8 +101,7 @@ SYSROOT_LINK_ARG := -L $(SYSROOT_API_LIB_DIR) -L $(SYSROOT_LIB_DIR)
+ 
+ # Architecture specific headers like asm/ and machine/ are installed to an
+ # arch-$ARCH subdirectory of the sysroot.
+-SYSROOT_ARCH_INC_ARG := \
+-    -isystem $(SYSROOT_INC)/usr/include/$(TOOLCHAIN_NAME)
++SYSROOT_ARCH_INC_ARG := -isystem $(SYSROOT_INC)/$(TOOLCHAIN_NAME)
+ 
+ NDK_TOOLCHAIN_RESOURCE_DIR := $(shell $(TARGET_CXX) -print-resource-dir)
+ NDK_TOOLCHAIN_LIB_DIR := $(strip $(NDK_TOOLCHAIN_RESOURCE_DIR))/lib/linux
+--- a/ndk-build
++++ b/ndk-build
+@@ -1,3 +1,2 @@
+ #!/bin/sh
+-DIR=$(cd "$(dirname "$0")" && pwd)
+-"$DIR/build/ndk-build" "$@"
++sh "$PREFIX/lib/ndk/build/ndk-build" "$@"
+

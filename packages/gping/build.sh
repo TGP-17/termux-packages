@@ -12,9 +12,6 @@ TERMUX_PKG_BUILD_IN_SRC=true
 
 termux_step_pre_configure() {
 	termux_setup_rust
-
-	mv $TERMUX_PREFIX/lib/libz.so.1{,.tmp}
-	mv $TERMUX_PREFIX/lib/libz.so{,.tmp}
 }
 
 termux_step_make() {
@@ -25,14 +22,4 @@ termux_step_make() {
 
 termux_step_make_install() {
 	install -Dm755 -t $TERMUX_PREFIX/bin target/${CARGO_TARGET_NAME}/release/gping
-}
-
-termux_step_post_make_install() {
-	mv $TERMUX_PREFIX/lib/libz.so.1{.tmp,}
-	mv $TERMUX_PREFIX/lib/libz.so{.tmp,}
-}
-
-termux_step_post_massage() {
-	rm -f lib/libz.so.1
-	rm -f lib/libz.so
 }

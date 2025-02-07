@@ -3,6 +3,7 @@ TERMUX_PKG_DESCRIPTION="Small SSH server and client"
 TERMUX_PKG_LICENSE="MIT"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION="2024.86"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://matt.ucc.asn.au/dropbear/releases/dropbear-${TERMUX_PKG_VERSION}.tar.bz2
 TERMUX_PKG_SHA256=e78936dffc395f2e0db099321d6be659190966b99712b55c530dd0a1822e0a5e
 TERMUX_PKG_DEPENDS="termux-auth, zlib"
@@ -13,6 +14,9 @@ TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-syslog --disable-utmp --disable-utmpx --disable-wtmp --disable-static"
 # Avoid linking to libcrypt for server password authentication:
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" ac_cv_lib_crypt_crypt=no"
+# Avoid linking to libtomcrypt if it was installed previously,
+# to avoid "ld.lld: error: undefined symbol: ltm_desc"
+TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" ac_cv_lib_tomcrypt_poly1305_init=no"
 # build a multi-call binary & enable progress info in 'scp'
 TERMUX_PKG_EXTRA_MAKE_ARGS="MULTI=1 SCPPROGRESS=1"
 

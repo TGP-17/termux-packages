@@ -26,7 +26,7 @@ termux_setup_ghc() {
 
 		(
 			set -e
-			unset CC CXX CFLAGS CXXFLAGS CPPFLAGS LDFLAGS AR AS CPP LD RANLIB READELF STRIP
+			termux_disable_bionic
 			cd "$TERMUX_GHC_TEMP_FOLDER"
 			./configure --prefix="$TERMUX_GHC_RUNTIME_FOLDER"
 			make install

@@ -4,6 +4,7 @@ TERMUX_PKG_LICENSE="BSD"
 TERMUX_PKG_LICENSE_FILE="sdk/LICENSE"
 TERMUX_PKG_MAINTAINER="@samujjal-gogoi"
 TERMUX_PKG_VERSION=3.5.4
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://github.com/dart-lang/sdk/archive/refs/tags/${TERMUX_PKG_VERSION}.tar.gz
 TERMUX_PKG_SHA256=c6bdf7591d3ba8d353dfaa0b10af58918610e65a1de9f3c9a644e7f3aecab16c
 TERMUX_PKG_BUILD_IN_SRC=true
@@ -43,6 +44,7 @@ termux_step_get_source() {
 }
 
 termux_step_make_install() {
+	rm -rf ${TERMUX_PREFIX}/lib/dart-sdk/
 	cd sdk
 	case "$TERMUX_ARCH" in
 		arm)

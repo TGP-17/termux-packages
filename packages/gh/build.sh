@@ -13,8 +13,7 @@ termux_step_make() {
 
 	cd "$TERMUX_PKG_SRCDIR"
 	(
-		unset GOOS GOARCH CGO_LDFLAGS
-		unset CC CXX CFLAGS CXXFLAGS LDFLAGS
+		termux_disable_bionic
 		go run ./cmd/gen-docs --man-page --doc-path $TERMUX_PREFIX/share/man/man1/
 	)
 	export GOPATH=$TERMUX_PKG_BUILDDIR

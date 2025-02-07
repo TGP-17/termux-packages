@@ -72,6 +72,10 @@ source "$TERMUX_SCRIPTDIR/scripts/build/termux_error_exit.sh"
 # shellcheck source=scripts/build/termux_download.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_download.sh"
 
+# Utility function to disable the entire bionic libc toolchain
+# shellcheck source=scripts/build/termux_disable_bionic.sh
+source "$TERMUX_SCRIPTDIR"/scripts/build/termux_disable_bionic.sh
+
 # Installing packages if necessary for the full operation of CGCT.
 # shellcheck source=scripts/build/termux_step_setup_cgct_environment.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_setup_cgct_environment.sh"
@@ -629,8 +633,9 @@ for ((i=0; i<${#PACKAGE_LIST[@]}; i++)); do
 			termux_step_get_dependencies
 			if [ "$TERMUX_PACKAGE_LIBRARY" = "glibc" ]; then
 				termux_step_setup_cgct_environment
+			else
+				termux_step_override_config_scripts
 			fi
-			termux_step_override_config_scripts
 		fi
 
 		termux_step_create_timestamp_file

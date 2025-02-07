@@ -3,7 +3,7 @@ TERMUX_PKG_DESCRIPTION="Java development kit and runtime"
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION=17.0
-TERMUX_PKG_REVISION=37
+TERMUX_PKG_REVISION=38
 _COMMIT=82234f890786d49c49cf4ecbcb09c47bd9bea7ed
 TERMUX_PKG_SRCURL=https://github.com/openjdk/mobile/archive/$_COMMIT.tar.gz
 TERMUX_PKG_SHA256=5b298148a26e754120c6dfe699056d0609fc6ed92bfc858dc2ba4909ef6e791b
@@ -64,6 +64,7 @@ termux_step_make() {
 }
 
 termux_step_make_install() {
+	rm -rf $TERMUX_PREFIX/lib/jvm/java-17-openjdk/
 	mkdir -p $TERMUX_PREFIX/lib/jvm/java-17-openjdk
 	cp -r build/linux-${TERMUX_ARCH/i686/x86}-server-release/images/jdk/* \
 		$TERMUX_PREFIX/lib/jvm/java-17-openjdk/

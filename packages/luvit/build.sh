@@ -3,7 +3,7 @@ TERMUX_PKG_DESCRIPTION="Asynchronous I/O for Lua"
 TERMUX_PKG_LICENSE="Apache-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION=2.18.1
-TERMUX_PKG_REVISION=1
+TERMUX_PKG_REVISION=2
 TERMUX_PKG_SRCURL=https://github.com/luvit/luvit/archive/refs/tags/${TERMUX_PKG_VERSION}.tar.gz
 TERMUX_PKG_SHA256=b792781d77028edb7e5761e96618c96162bd68747b8fced9a6fc52f123837c2c
 TERMUX_PKG_DEPENDS="luvi"
@@ -26,7 +26,7 @@ termux_step_make() {
 
 termux_step_make_install() {
 	mkdir -p "${TERMUX_PREFIX}/share/luvit"
-	unzip -d "${TERMUX_PREFIX}/share/luvit" luvit
+	unzip -d "${TERMUX_PREFIX}/share/luvit" -o luvit
 
 	cat > "${TERMUX_PREFIX}/bin/luvit" <<-EOF
 	#!${TERMUX_PREFIX}/bin/env bash

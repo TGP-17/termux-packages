@@ -1,0 +1,13 @@
+.deb files for termux-packages are built a different way
+that does not involve the fakeroot program.
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -124,7 +124,7 @@ else()
+   endif()
+ endif()
+ 
+-if(BUILD_DEB)
++if(False)
+   add_subdirectory(debian)
+   add_custom_target(predebian COMMENT "install files before build debian packages")
+   add_custom_command(TARGET predebian POST_BUILD

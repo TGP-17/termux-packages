@@ -45,8 +45,7 @@ termux_setup_xmake() {
 
 		(
 			# avoid pick up Termux pkg-config, stop link with Termux ncursesw
-			unset AR AS CC CFLAGS CPP CPPFLAGS CXX CXXFLAGS LD LDFLAGS PREFIX TERMUX_ARCH
-			export PATH="/usr/bin:${PATH}"
+			termux_disable_bionic
 			pushd "${XMAKE_FOLDER}"
 			./configure --prefix="${XMAKE_FOLDER}"
 			make -j"$(nproc)" install

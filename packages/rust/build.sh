@@ -198,7 +198,10 @@ termux_step_make() {
 }
 
 termux_step_make_install() {
-	unset CC CFLAGS CPP CPPFLAGS CXX CXXFLAGS LD LDFLAGS PKG_CONFIG RANLIB
+	(
+	# Rust should be using the many varibles customized in termux_step_configure
+	# above, not the normal bionic libc environment variables
+	termux_disable_bionic
 
 	# needed to workaround build issue that only happens on x86_64
 	# /home/runner/.termux-build/rust/build/build/bootstrap/debug/bootstrap: error while loading shared libraries: /lib/x86_64-linux-gnu/libc.so: invalid ELF header
@@ -226,6 +229,7 @@ termux_step_make_install() {
 	"${TERMUX_PKG_SRCDIR}/x.py" install -j ${TERMUX_PKG_MAKE_PROCESSES} --target wasm32-wasip2 --stage 1 std
 
 	"${TERMUX_PKG_SRCDIR}/x.py" dist -j ${TERMUX_PKG_MAKE_PROCESSES} rustc-dev
+	)
 
 	# remove version suffix: beta, nightly
 	local VERSION=${TERMUX_PKG_VERSION//~*}
