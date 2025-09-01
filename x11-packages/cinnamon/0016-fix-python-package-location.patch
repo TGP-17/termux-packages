@@ -1,0 +1,13 @@
+diff --git a/debian/rules b/debian/rules
+index d394641..c8c2cb2 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -18,7 +18,7 @@ override_dh_auto_configure:
+ 		--libexecdir=/usr/libexec/cinnamon \
+ 		-D docs=true \
+ 		-D deprecated_warnings=false \
+-		-D py3modules_dir=/usr/lib/python3/dist-packages
++		-D py3modules_dir=@TERMUX_PYTHON_HOME@/site-packages
+ 
+ # workaround for fix lmde4 build
+ override_dh_dwz:
