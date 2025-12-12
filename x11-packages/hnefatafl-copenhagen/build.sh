@@ -2,9 +2,9 @@ TERMUX_PKG_HOMEPAGE=https://hnefatafl.org/
 TERMUX_PKG_DESCRIPTION="Copenhagen Hnefatafl client"
 TERMUX_PKG_LICENSE="MIT, Apache-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="4.2.2"
+TERMUX_PKG_VERSION="4.4.1"
 TERMUX_PKG_SRCURL="https://github.com/dcampbell24/hnefatafl/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz"
-TERMUX_PKG_SHA256=3dcf28a3fce930e91894de755f553cb810d092da9145b57bdf4b0f69c4a2f95d
+TERMUX_PKG_SHA256=154f18aade8b84acbd8ce090de82ce8e541b33d31976a2f6a5c5ea5370e69e3e
 TERMUX_PKG_DEPENDS="alsa-lib, libc++, hicolor-icon-theme, libxi, libxcursor, libxrandr, hicolor-icon-theme"
 TERMUX_PKG_BUILD_DEPENDS="libxcb, libxkbcommon"
 TERMUX_PKG_BUILD_IN_SRC=true
@@ -101,6 +101,7 @@ termux_step_pre_configure() {
 		-mindepth 1 -maxdepth 1 -type d \
 		! -wholename ./vendor/cpal \
 		! -wholename ./vendor/smithay-client-toolkit \
+		! -wholename ./vendor/smithay-client-toolkit-0.19.2 \
 		! -wholename ./vendor/softbuffer \
 		! -wholename ./vendor/wayland-cursor \
 		! -wholename ./vendor/wgpu-hal \
@@ -111,7 +112,7 @@ termux_step_pre_configure() {
 
 	git clone https://github.com/iced-rs/winit.git vendor/winit-iced
 
-	find vendor/{cpal,smithay-client-toolkit,softbuffer,wgpu-hal,winit,winit-iced,x11rb-protocol,xkbcommon-dl} -type f | \
+	find vendor/{cpal,smithay-client-toolkit,smithay-client-toolkit-0.19.2,softbuffer,wgpu-hal,winit,winit-iced,x11rb-protocol,xkbcommon-dl} -type f | \
 		xargs -n 1 sed -i \
 		-e 's|target_os = "android"|target_os = "disabling_this_because_it_is_for_building_an_apk"|g' \
 		-e 's|target_os = "linux"|target_os = "android"|g' \
@@ -120,18 +121,29 @@ termux_step_pre_configure() {
 		-e "s|libxcb.so.1|libxcb.so|g" \
 		-e "s|/tmp|$TERMUX_PREFIX/tmp|g"
 
-	for crate in wayland-cursor softbuffer smithay-client-toolkit; do
+	for crate in wayland-cursor softbuffer; do
 		local patch="$TERMUX_PKG_BUILDER_DIR/$crate-no-shm.diff"
 		local dir="vendor/$crate"
 		echo "Applying patch: $patch"
 		patch -p1 -d "$dir" < "${patch}"
 	done
 
+	local patch="$TERMUX_PKG_BUILDER_DIR/smithay-client-toolkit-0.19.2-no-shm.diff"
+	local dir="vendor/smithay-client-toolkit-0.19.2"
+	echo "Applying patch: $patch"
+	patch -p1 -d "$dir" < "${patch}"
+
+	local patch="$TERMUX_PKG_BUILDER_DIR/smithay-client-toolkit-0.20.0-no-shm.diff"
+	local dir="vendor/smithay-client-toolkit"
+	echo "Applying patch: $patch"
+	patch -p1 -d "$dir" < "${patch}"
+
 	echo "" >> Cargo.toml
 	echo '[patch.crates-io]' >> Cargo.toml
 	for crate in cpal smithay-client-toolkit softbuffer wayland-cursor wgpu-hal winit x11rb-protocol xkbcommon-dl; do
 		echo "$crate = { path = \"./vendor/$crate\" }" >> Cargo.toml
 	done
+	echo "smithay-client-toolkit2 = { package = \"smithay-client-toolkit\", path = \"./vendor/smithay-client-toolkit-0.19.2\" }" >> Cargo.toml
 	echo "" >> Cargo.toml
 	echo '[patch."git+https://github.com/iced-rs/winit.git"]' >> Cargo.toml
 	echo 'winit = { path = "./vendor/winit-iced" }' >> Cargo.toml
