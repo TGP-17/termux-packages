@@ -40,11 +40,12 @@ jobs:
       fail-fast: false
     steps:
     - name: Clone repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1000
     - name: Set process id limit for 32-bit builds depending on aosp-libs
       run: echo 65535 | sudo tee /proc/sys/kernel/pid_max
+
     - name: Gather build summary
       id: build-info
       env:
@@ -225,10 +226,23 @@ jobs:
           ./scripts/lint-packages.sh "${package_recipes[@]}"
         fi
 
+    - name: Enable zram
+      if: ${{ steps.build-info.outputs.skip-building != 'true' }}
+      uses: ./.github/actions/zram
+      with:
+        algorithm: zstd
+        size: 16G
+        priority: 100
+        device_name: /dev/zram0
+
     - name: Free additional disk space (if needed)
       if: ${{ steps.build-info.outputs.docker-build == 'false' && steps.build-info.outputs.skip-building != 'true' }}
       run: |
         ./scripts/setup-ubuntu.sh
+        # need to unset these for setup-android-sdk.sh.
+        unset NDK ANDROID_HOME
+        ./scripts/setup-android-sdk.sh
+        rm -f ${HOME}/lib/ndk-*.zip ${HOME}/lib/sdk-*.zip
         sudo apt install ninja-build
         ./scripts/free-space.sh
 
@@ -236,6 +250,7 @@ jobs:
       if: ${{ steps.build-info.outputs.skip-building != 'true' }}
       env:
         DOCKER_BUILD: ${{ steps.build-info.outputs.docker-build }}
+        TERMUX_DOCKER__CONTAINER_EXEC_COMMAND__PRE_CHECK_IF_WILL_BUILD_PACKAGES: "true"
       run: |
         declare -a packages=()
         for repo_path in $(jq --raw-output 'del(.pkg_format) | keys | .[]' repo.json); do
@@ -249,7 +264,12 @@ jobs:
 
         if [[ "${#packages[@]}" -gt 0 ]]; then
           if [ "$DOCKER_BUILD" == 'false' ]; then
-            NDK="$ANDROID_NDK" ANDROID_HOME="$ANDROID_SDK_ROOT" ./build-package.sh -I -C -a "${{ matrix.target_arch }}" "${packages[@]}"
+            # these need to be unset a second time again for ./build-package.sh
+            # when it is run outside of Docker, because GitHub Actions does not
+            # support permanently unsetting variables at time of writing.
+            # https://github.com/actions/runner/issues/1126
+            unset NDK ANDROID_HOME
+            ./build-package.sh -I -C -a "${{ matrix.target_arch }}" "${packages[@]}"
           else
             ./scripts/run-docker.sh ./build-package.sh -I -C -a "${{ matrix.target_arch }}" "${packages[@]}"
           fi
@@ -287,13 +307,13 @@ jobs:
         find debs -type f -name "*.deb" -exec sha256sum "{}" \; | sort -k2 | tee checksum-${{ matrix.target_arch }}-${{ github.sha }}.txt
     - name: Store checksums for built *.deb files
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: checksum-${{ matrix.target_arch }}-${{ github.sha }}
         path: checksum-${{ matrix.target_arch }}-${{ github.sha }}.txt
     - name: Store *.deb files
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: debs-${{ matrix.target_arch }}-${{ github.sha }}
         path: ./artifacts
@@ -301,10 +321,10 @@ jobs:
   test-buildorder-random:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Clone repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Randomise buildorder.py test
       run: ./scripts/bin/test-buildorder-random
     - name: Randomise buildorder.py test (aarch64)
@@ -329,12 +349,12 @@ jobs:
       contents: read
     if: github.repository == 'termux/termux-packages' && github.ref != 'refs/heads/master'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Clone repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Get *.deb files
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         path: ./
     - name: Check packages using Packages.bz2
@@ -396,12 +416,12 @@ jobs:
       contents: read
     if: github.repository == 'termux/termux-packages' && github.ref == 'refs/heads/master'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Clone repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Get *.deb files
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         path: ./
     - name: Upload to packages.termux.dev
